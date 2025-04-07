@@ -1,44 +1,23 @@
 from flask import Flask, request
-from tarefa import Tarefa
+from tarefa_controller import get_tarefas, get_tarefa, criar_tarefa, remover_tarefa
 
 app = Flask(__name__)
 
-tarefas = [
-    Tarefa(task_id=1,
-           titulo="Estudar Javascript",
-           descricao="Estudar Javascript para aprender a construir eventos nas páginas web",
-           status="Em andamento",
-           prioridade="Alta",
-           data_inicio="01/01/2024",
-           data_fim="10/01/2024").to_json(),
-    Tarefa(task_id=2,
-           titulo="Estudar Flask",
-           descricao="Estudar Flask para aprender sobre Web Services",
-           status="Não iniciado",
-           prioridade="Média",
-           data_inicio="",
-           data_fim="").to_json()
-]
+tarefas = []
 
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
-    return tarefas
+    return get_tarefas()
+
 
 @app.route('/tasks/<int:task_id>', methods=['GET'])
 def get_task_by_id(task_id):
-    for tarefa in tarefas:
-        if tarefa.get('task_id') == task_id:
-            return tarefa
+    return get_tarefa(task_id)
 
-    return 'Tarefa não encontrada'
 
 @app.route('/tasks', methods=['POST'])
 def create_task():
-    task = request.json
-    ultimo_id = tarefas[-1].get('task_id') + 1
-    task['task_id'] = ultimo_id
-    tarefas.append(task)
-    return task
+    return criar_tarefa(request.json)
 
 @app.route('/tasks/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
@@ -62,16 +41,7 @@ def update_task(task_id):
 
 @app.route('/tasks/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
-    task_remove_index = 0
-
-    for index, task in enumerate(tarefas):
-        if task.get('task_id') == task_id:
-            task_remove_index = index
-            break
-
-    tarefas.pop(task_remove_index)
-
-    return 'Tarefa removida com sucesso'
+    return remover_tarefa(task_id)
 
 if __name__ == '__main__':
     app.run(debug=True)
